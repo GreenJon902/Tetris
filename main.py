@@ -33,11 +33,27 @@ class Block:
                 if pixel_type != ".":
                     pygame.draw.rect(DISPLAY, shape_colors[self.shape_id], (x, y, square_size, square_size))
 
-    def check_pos(self):
+    def check_pos(self, block_move_direction):
         global current_block
 
         for sy, string in enumerate(shapes[self.shape_id]):
             for sx, pixel_type in enumerate(string):
+                try:
+                    if dormant_bricks[sx + self.pos[0]][sy + self.pos[1] + 1] != ".":
+                        if block_move_direction == "l":
+                            current_block.pos[0] += 1
+                        elif block_move_direction == "r":
+                            current_block.pos[0] -= 1
+
+                        else:  # Hitting because fell on block
+                            self.make_dormant()
+                            print("Creating new block")
+                            current_block = Block()
+                            current_block.pos = [0, 0]
+                            break
+
+                except IndexError:  # Most likely because bottom layer
+                    pass
 
                 if self.pos[0] + sx < 0:
                     self.pos[0] = 0
@@ -45,7 +61,7 @@ class Block:
                 elif self.pos[0] + sx > horizontal_square_amount - 1:
                     self.pos[0] = horizontal_square_amount - len(string)
 
-            if self.pos[1] + sy >= vertical_square_amount:
+            if self.pos[1] + sy >= vertical_square_amount - 1:
                 self.pos[1] = vertical_square_amount - len(shapes[self.shape_id])
 
                 self.make_dormant()
@@ -92,18 +108,22 @@ def update_blocks(block_move_direction):
 
     if block_move_direction == "l":
         current_block.pos[0] -= 1
+
     elif block_move_direction == "r":
         current_block.pos[0] += 1
 
+    elif block_move_direction == "d":
+        current_block.pos[1] += 1
 
-    if loops_before_move_down_counter == loops_before_move_down:
+
+    if loops_before_move_down_counter >= loops_before_move_down and block_move_direction != "d":
         current_block.pos[1] += 1
         loops_before_move_down_counter = 0
 
     else:
         loops_before_move_down_counter += 1
 
-        current_block.check_pos()
+    current_block.check_pos(block_move_direction)
 
 
 
@@ -137,6 +157,8 @@ while True:
                     to_move = "l"
                 elif event.key == K_d:
                     to_move = "r"
+                elif event.key == K_s:
+                    to_move = "d"
 
             elif event.type == KEYUP:
                 to_move = None
