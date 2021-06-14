@@ -13,3 +13,4 @@ window_size = ((square_size + square_gap) * horizontal_square_amount + square_ga
 
 # Other
 update_time = 0.1
+loops_before_move_down = 3
