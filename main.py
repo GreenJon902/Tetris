@@ -34,10 +34,10 @@ class Block:
                     pygame.draw.rect(DISPLAY, shape_colors[self.shape_id], (x, y, square_size, square_size))
 
     def check_pos(self):
+        global current_block
+
         for sy, string in enumerate(shapes[self.shape_id]):
-            y = square_y(sy + self.pos[1])
             for sx, pixel_type in enumerate(string):
-                x = square_y(sx + self.pos[0])
 
                 if self.pos[0] + sx < 0:
                     self.pos[0] = 0
@@ -47,8 +47,21 @@ class Block:
 
             if self.pos[1] + sy >= vertical_square_amount:
                 self.pos[1] = vertical_square_amount - len(shapes[self.shape_id])
+
+                self.make_dormant()
+                print("Creating new block")
+                current_block = Block()
+                current_block.pos = [0, 0]
                 break
 
+    def make_dormant(self):
+        for sy, string in enumerate(shapes[self.shape_id]):
+            y = sy + self.pos[1]
+            for sx, pixel_type in enumerate(string):
+                x = sx + self.pos[0]
+
+                if pixel_type != ".":
+                    dormant_bricks[x][y] = self.shape_id
 
 
 def draw():
@@ -62,6 +75,13 @@ def draw():
 
             pygame.draw.rect(DISPLAY, square_color, (x, y, square_size, square_size))
 
+    for sx, x_colors in enumerate(dormant_bricks):
+        x = square_x(sx)
+        for sy, color in enumerate(x_colors):
+            y = square_y(sy)
+
+            if color != ".":
+                pygame.draw.rect(DISPLAY, shape_colors[color], (x, y, square_size, square_size))
 
     current_block.draw()
     pygame.display.update()
@@ -79,10 +99,11 @@ def update_blocks(block_move_direction):
     if loops_before_move_down_counter == loops_before_move_down:
         current_block.pos[1] += 1
         loops_before_move_down_counter = 0
+
     else:
         loops_before_move_down_counter += 1
 
-    current_block.check_pos()
+        current_block.check_pos()
 
 
 
@@ -96,6 +117,7 @@ to_move = None
 update_timer = 0.0
 loops_before_move_down_counter = 0
 time_before = time.time()
+dormant_bricks = [["." for y in range(vertical_square_amount)] for x in range(horizontal_square_amount)]
 while True:
     time_after = time.time()
     update_timer += time_after - time_before
