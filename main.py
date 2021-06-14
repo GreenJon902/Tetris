@@ -20,12 +20,14 @@ def square_y(y):
 class Block:
     pos = list(block_start_pos)
     shape_id = []
+    rotation = 0
 
     def __init__(self):
         self.shape_id = random.choice(list(shapes.keys()))
+        self.rotation = random.randint(0, 3)
 
     def draw(self):
-        for sy, string in enumerate(shapes[self.shape_id]):
+        for sy, string in enumerate(shapes[self.shape_id][self.rotation]):
             y = square_y(sy + self.pos[1])
             for sx, pixel_type in enumerate(string):
                 x = square_x(sx + self.pos[0])
@@ -36,7 +38,7 @@ class Block:
     def check_pos(self, block_move_direction):
         global current_block
 
-        for sy, string in enumerate(shapes[self.shape_id]):
+        for sy, string in enumerate(shapes[self.shape_id][self.rotation]):
             for sx, pixel_type in enumerate(string):
                 try:
                     if pixel_type == "o" and dormant_bricks[sx + self.pos[0]][sy + self.pos[1] + 1] != ".":
@@ -62,7 +64,7 @@ class Block:
                     self.pos[0] = horizontal_square_amount - len(string)
 
             if self.pos[1] + sy >= vertical_square_amount - 1:
-                self.pos[1] = vertical_square_amount - len(shapes[self.shape_id])
+                self.pos[1] = vertical_square_amount - len(shapes[self.shape_id][self.rotation])
 
                 self.make_dormant()
                 print("Creating new block")
@@ -71,7 +73,7 @@ class Block:
                 break
 
     def make_dormant(self):
-        for sy, string in enumerate(shapes[self.shape_id]):
+        for sy, string in enumerate(shapes[self.shape_id][self.rotation]):
             y = sy + self.pos[1]
             for sx, pixel_type in enumerate(string):
                 x = sx + self.pos[0]
@@ -134,13 +136,10 @@ def update_blocks(block_move_direction):
 
     # Line destroy
     for sy, y_colors in enumerate(zip(*dormant_bricks[::-1])):
-        print(sy, y_colors)
         if "." not in y_colors:
-            print("Removed row", sy, y_colors)
             for sx in dormant_bricks:
                 sx.pop(sy)
                 sx.insert(0, ".")
-    print()
 
 
 pygame.init()
@@ -175,6 +174,8 @@ while True:
                     to_move = "r"
                 elif event.key == K_s:
                     to_move = "d"
+                elif event.key == K_r:
+                    current_block.rotation = (current_block.rotation + 1) % 4
 
             elif event.type == KEYUP:
                 to_move = None
