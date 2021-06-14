@@ -18,7 +18,7 @@ def square_y(y):
 
 
 class Block:
-    pos = [0, 0]
+    pos = list(block_start_pos)
     shape_id = []
 
     def __init__(self):
@@ -39,7 +39,7 @@ class Block:
         for sy, string in enumerate(shapes[self.shape_id]):
             for sx, pixel_type in enumerate(string):
                 try:
-                    if dormant_bricks[sx + self.pos[0]][sy + self.pos[1] + 1] != ".":
+                    if pixel_type == "o" and dormant_bricks[sx + self.pos[0]][sy + self.pos[1] + 1] != ".":
                         if block_move_direction == "l":
                             current_block.pos[0] += 1
                         elif block_move_direction == "r":
@@ -52,7 +52,7 @@ class Block:
                             current_block.pos = [0, 0]
                             break
 
-                except IndexError:  # Most likely because bottom layer
+                except IndexError:  # Most likely because bottom or top layer
                     pass
 
                 if self.pos[0] + sx < 0:
@@ -125,6 +125,22 @@ def update_blocks(block_move_direction):
 
     current_block.check_pos(block_move_direction)
 
+    # Loosing
+    for x in dormant_bricks:
+        if x[0] != ".":
+            print("Player lost!")
+            pygame.quit()
+            sys.exit()
+
+    # Line destroy
+    for sy, y_colors in enumerate(zip(*dormant_bricks[::-1])):
+        print(sy, y_colors)
+        if "." not in y_colors:
+            print("Removed row", sy, y_colors)
+            for sx in dormant_bricks:
+                sx.pop(sy)
+                sx.insert(0, ".")
+    print()
 
 
 pygame.init()
