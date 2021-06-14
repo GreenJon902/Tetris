@@ -138,6 +138,7 @@ def update_blocks(block_move_direction):
     for sy, y_colors in enumerate(zip(*dormant_bricks[::-1])):
         if "." not in y_colors:
             for sx in dormant_bricks:
+                print("Removed row", sy, y_colors)
                 sx.pop(sy)
                 sx.insert(0, ".")
 
